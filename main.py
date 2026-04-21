@@ -62,8 +62,8 @@ def fetch_usage(api_key: str, starting_at: str, ending_at: str, group_by: list[s
 
 def build_daily_row(record: dict) -> dict:
     return {
-        "start_time": record["start_time"],
-        "end_time": record["end_time"],
+        "start_time": record["starting_at"],
+        "end_time": record["ending_at"],
         "model": record.get("model"),
         "workspace_id": record.get("workspace_id"),
         "input_tokens": record.get("input_tokens", 0),
@@ -78,8 +78,8 @@ def build_user_daily_row(record: dict) -> dict:
     if isinstance(user, dict):
         user = user.get("email") or user.get("id") or json.dumps(user)
     return {
-        "start_time": record["start_time"],
-        "end_time": record["end_time"],
+        "start_time": record["starting_at"],
+        "end_time": record["ending_at"],
         "model": record.get("model"),
         "workspace_id": record.get("workspace_id"),
         "user": user,
@@ -118,7 +118,7 @@ def handler(request):
         now = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
         if mode == "backfill":
-            starting_at = (now - timedelta(days=90)).strftime("%Y-%m-%dT%H:%M:%SZ")
+            starting_at = (now - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
             ending_at = now.strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
             yesterday = now - timedelta(days=1)
@@ -130,7 +130,7 @@ def handler(request):
         api_key = get_secret(ANTHROPIC_SECRET_NAME)
 
         daily_records = fetch_usage(api_key, starting_at, ending_at, ["model", "workspace_id"])
-        user_records = fetch_usage(api_key, starting_at, ending_at, ["model", "workspace_id", "user"])
+        user_records = fetch_usage(api_key, starting_at, ending_at, ["model", "workspace_id"])
 
         daily_rows = [build_daily_row(r) for r in daily_records]
         user_daily_rows = [build_user_daily_row(r) for r in user_records]

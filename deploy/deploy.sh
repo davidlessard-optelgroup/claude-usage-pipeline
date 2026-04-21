@@ -19,7 +19,7 @@ bq query \
   --project_id="${PROJECT_ID}" \
   --use_legacy_sql=false \
   --nouse_cache \
-  "$(cat ../schema.sql)"
+  "$(cat /home/adm_david_lessard/claude-usage-pipeline/schema.sql)"
 
 echo "==> Déploiement de la Cloud Function Gen2..."
 gcloud functions deploy "${FUNCTION_NAME}" \
@@ -27,7 +27,7 @@ gcloud functions deploy "${FUNCTION_NAME}" \
   --project="${PROJECT_ID}" \
   --region="${REGION}" \
   --runtime=python311 \
-  --source=.. \
+  --source=/home/adm_david_lessard/claude-usage-pipeline \
   --entry-point=handler \
   --trigger-http \
   --no-allow-unauthenticated \
