@@ -117,7 +117,11 @@ def handler(request):
 
         now = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
-        if mode == "backfill":
+        if body.get("start_date") and body.get("end_date"):
+            starting_at = f"{body['start_date']}T00:00:00Z"
+            ending_at = f"{body['end_date']}T00:00:00Z"
+            mode = "custom"
+        elif mode == "backfill":
             starting_at = (now - timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
             ending_at = now.strftime("%Y-%m-%dT%H:%M:%SZ")
         else:
