@@ -99,8 +99,14 @@ def load_to_bigquery(client: bigquery.Client, table_id: str, rows: list[dict]) -
     date_list = ", ".join(f"DATE '{d}'" for d in dates)
     delete_sql = f"DELETE FROM `{table_id}` WHERE DATE(start_time) IN ({date_list})"
 
-    client.query(delete_sql).result()
-    logger.info("Purged %d date(s) from %s", len(dates), table_id)
+    try:
+        client.query(delete_sql).result()
+        logger.info("Purged %d date(s) from %s", len(dates), table_id)
+    except Exception as e:
+        if "streaming buffer" in str(e).lower():
+            logger.warning("DELETE skipped for %s (streaming buffer active) — inserting anyway.", table_id)
+        else:
+            raise
 
     errors = client.insert_rows_json(table_id, rows)
     if errors:
